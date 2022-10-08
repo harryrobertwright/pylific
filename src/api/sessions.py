@@ -12,13 +12,9 @@ class Session(BaseSession):
         self.auth = auth.TokenAuth(token)
         self.raise_deprecations = raise_deprecations
 
-    def request(
-        self, *args, endpoint: urls.Endpoint | None = None, **kwargs
-    ) -> Response:
-        if endpoint is None:
-            endpoint = URL()
-
-        url = str(urls.BASE_URL.join(endpoint.value))
+    def request(self, *args, endpoint: str, **kwargs) -> Response:
+        endpoint = URL(endpoint)
+        url = str(urls.BASE_URL.join(endpoint))
         response = super().request(url=url, *args, **kwargs)
         is_deprecated = response.headers.get("Deprecation", False)
 

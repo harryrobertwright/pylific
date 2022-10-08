@@ -32,9 +32,15 @@ class Client:
     def session(self) -> sessions.Session:
         return sessions.Session(self.token, raise_deprecations=self.raise_deprecations)
 
-    def _request(self, method: str, endpoint: urls.Endpoint) -> JSON:
+    def _request(self, method: str, endpoint: str) -> JSON:
         return self.session.request(method, endpoint=endpoint).json()
 
-    def get_studies(self) -> list[str, Any] | None:
-        data = self._request("GET", urls.Endpoint.STUDIES)
+    def _get(self, endpoint: str) -> JSON:
+        return self._request("GET", endpoint)
+
+    def get_studies(self) -> list[dict[str, Any]] | None:
+        data = self._get(urls.Endpoint.STUDIES.value)
         return data.get("results")
+
+    def get_study(self, id: str) -> dict[str, Any] | None:
+        return self._get(urls.Endpoint.STUDY.value.format(id=id))

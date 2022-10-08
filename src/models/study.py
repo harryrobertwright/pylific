@@ -16,3 +16,10 @@ class Study(BaseModel):
 
         studies = Client(token).get_studies()
         return [StudyParser(study).parse() for study in studies]
+
+    @classmethod
+    def get(cls, token: str, id: str) -> "Study":
+        from src.parsers import StudyParser
+
+        study = Client(token).get_study(id)
+        return StudyParser(study).parse()
