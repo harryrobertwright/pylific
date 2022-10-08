@@ -1,6 +1,7 @@
 from requests import Response
 from requests import Session as BaseSession
-from src.api import auth
+from src.api import auth, urls
+from yarl import URL
 
 
 class Session(BaseSession):
@@ -11,8 +12,14 @@ class Session(BaseSession):
         self.auth = auth.TokenAuth(token)
         self.raise_deprecations = raise_deprecations
 
-    def request(self, *args, **kwargs) -> Response:
-        response = super().request(*args, **kwargs)
+    def request(
+        self, *args, endpoint: urls.Endpoint | None = None, **kwargs
+    ) -> Response:
+        if endpoint is None:
+            endpoint = URL()
+
+        url = str(urls.BASE_URL.join(endpoint.value))
+        response = super().request(url=url, *args, **kwargs)
         is_deprecated = response.headers.get("Deprecation", False)
 
         if is_deprecated and self.raise_deprecations:

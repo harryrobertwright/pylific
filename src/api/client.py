@@ -6,29 +6,35 @@ from src.types import JSON
 
 
 class Client:
-    def __init__(self, token: str) -> None:
+    def __init__(self, token: str, raise_deprecations: bool = False) -> None:
         self._token = token
+        self._raise_deprecations = raise_deprecations
 
     @property
     def token(self) -> str:
         return self._token
 
+    @property
+    def raise_deprecations(self) -> bool:
+        return self._raise_deprecations
+
     @token.setter
     def token(self, value: str) -> None:
         self._token = value
-        session_key = "session"
+        self.session.auth.token = value
 
-        if session_key in self.__dict__:
-            del self.__dict__[session_key]
+    @raise_deprecations.setter
+    def raise_deprecations(self, value: bool) -> None:
+        self._raise_deprecations = value
+        self.session.raise_deprecations = self._raise_deprecations
 
     @cached_property
     def session(self) -> sessions.Session:
-        return sessions.Session(self.token)
+        return sessions.Session(self.token, raise_deprecations=self.raise_deprecations)
 
-    def _get(self, endpoint: urls.Endpoint) -> JSON:
-        url = str(urls.BASE_URL.join(endpoint.value))
-        return self.session.get(url).json()
+    def _request(self, method: str, endpoint: urls.Endpoint) -> JSON:
+        return self.session.request(method, endpoint=endpoint).json()
 
     def get_studies(self) -> list[str, Any] | None:
-        data = self._get(urls.Endpoint.STUDIES)
+        data = self._request("GET", urls.Endpoint.STUDIES)
         return data.get("results")
