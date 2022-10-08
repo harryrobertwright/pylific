@@ -1,3 +1,5 @@
+from typing import Any
+
 from requests import Session
 from src.api import auth, urls
 from src.types import JSON
@@ -12,5 +14,6 @@ class Client:
         url = str(urls.BASE_URL.join(endpoint.value))
         return self.session.get(url).json()
 
-    def get_studies(self) -> JSON:
-        return self._get(urls.Endpoint.STUDIES)
+    def get_studies(self) -> list[str, Any] | None:
+        data = self._get(urls.Endpoint.STUDIES)
+        return data.get("results")
